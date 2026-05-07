@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encuesta de Relevamiento de Procesos - Beryhuert</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Librería para generar PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none; }
+            body { background-color: white; }
+            .container { max-width: 100%; width: 100%; margin: 0; padding: 0; shadow: none; border: none; }
+            .section-card { border: 1px solid #e5e7eb; margin-bottom: 1rem; break-inside: avoid; }
+        }
+        .blur-content { filter: blur(12px); pointer-events: none; user-select: none; }
+        
+        /* Estilos para que el PDF se vea bien */
+        .pdf-mode .no-print { display: none !important; }
+        .pdf-mode { padding: 20px !important; }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-900 pb-12">
+
+    <!-- Pantalla de Bloqueo de Seguridad -->
+    <div id="security-overlay" class="fixed inset-0 z-[100] bg-slate-900/95 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002-2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 mb-2 uppercase tracking-tight">Acceso Restringido</h2>
+            <p class="text-sm text-slate-500 mb-6">Ingrese el código de acceso proporcionado por Sistemas para ver el formulario.</p>
+            <input type="password" id="access-code" class="w-full border-2 border-slate-200 rounded-lg p-3 text-center text-lg tracking-widest focus:border-blue-600 outline-none mb-4" placeholder="••••">
+            <button onclick="checkAccess()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg active:scale-95">
+                Verificar Acceso
+            </button>
+            <p id="error-msg" class="text-red-500 text-xs mt-3 hidden italic font-medium">Código incorrecto. Contacte a IT.</p>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div id="main-content" class="blur-content transition-all duration-700">
+        <div id="capture-area" class="container mx-auto max-w-4xl p-8 bg-white shadow-xl mt-8 rounded-2xl border border-slate-200 relative">
+            
+            <!-- Notificación -->
+            <div id="alert-box" class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 z-[110] bg-blue-800 text-white px-8 py-4 rounded-xl shadow-2xl flex flex-col items-center space-y-2 border border-blue-400">
+                <div class="flex items-center space-x-3">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span id="alert-msg" class="font-bold">Generando PDF...</span>
+                </div>
+                <span class="text-[10px] uppercase opacity-80">Por favor espere un momento</span>
+            </div>
+
+            <!-- Header -->
+            <div class="flex justify-between items-start border-b-2 border-blue-600 pb-6 mb-8">
+                <div>
+                    <h1 class="text-3xl font-extrabold text-blue-900 uppercase tracking-tight">Relevamiento de Procesos</h1>
+                    <p class="text-lg text-slate-500 font-semibold mt-1 italic tracking-wide">Grupo Beryhuert / Cadebry</p>
+                </div>
+                <div class="text-right">
+                    <div class="bg-blue-50 text-blue-700 text-[10px] font-black px-3 py-1 rounded-full border border-blue-200 uppercase tracking-widest">Confidencial</div>
+                    <p class="text-[10px] text-slate-400 mt-2">Versión Digital V8.0 (PDF)</p>
+                </div>
+            </div>
+
+            <form id="relevamiento-form">
+                <!-- 1. Perfil -->
+                <div class="section-card p-6 mb-8 rounded-xl bg-slate-50 border border-slate-200">
+                    <h2 class="text-sm font-bold mb-4 text-blue-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">1</span>
+                        Información General del Usuario
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nombre Completo</label>
+                            <input id="userName" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Departamento / Área</label>
+                            <input id="userArea" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Puesto Actual</label>
+                            <input id="userPuesto" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Funciones -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl">
+                    <h2 class="text-sm font-bold mb-4 text-blue-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">2</span>
+                        Descripción de Funciones
+                    </h2>
+                    <label class="block text-[10px] font-bold uppercase text-slate-500 mb-2">¿Cuáles son sus principales actividades y responsabilidades?</label>
+                    <textarea id="userFunciones" class="w-full border border-slate-200 rounded-lg p-3 text-sm h-24 bg-slate-50 focus:border-blue-600 outline-none transition-all"></textarea>
+                </div>
+
+                <!-- 3. Software -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl">
+                    <h2 class="text-sm font-bold mb-4 text-blue-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">3</span>
+                        Software de Uso Diario
+                    </h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-2">
+                        <label class="flex items-center space-x-3 text-sm cursor-pointer"><input type="checkbox" name="sw" value="SAP B1" class="w-4 h-4 rounded text-blue-600"> <span>SAP Business One</span></label>
+                        <label class="flex items-center space-x-3 text-sm cursor-pointer"><input type="checkbox" name="sw" value="Aspel NOI" class="w-4 h-4 rounded text-blue-600"> <span>Aspel NOI</span></label>
+                        <label class="flex items-center space-x-3 text-sm cursor-pointer"><input type="checkbox" name="sw" value="NovaCaja" class="w-4 h-4 rounded text-blue-600"> <span>NovaCaja</span></label>
+                        <label class="flex items-center space-x-3 text-sm cursor-pointer"><input type="checkbox" name="sw" value="Excel" class="w-4 h-4 rounded text-blue-600"> <span>Excel (C/Macros)</span></label>
+                        <label class="flex items-center space-x-3 text-sm cursor-pointer"><input type="checkbox" name="sw" value="Remoto" class="w-4 h-4 rounded text-blue-600"> <span>AnyDesk / RustDesk</span></label>
+                        <div class="flex flex-col space-y-1">
+                            <label class="flex items-center space-x-2 text-sm font-bold text-blue-800">
+                                <input type="checkbox" id="sw_otros_chk"> <span>Otros:</span>
+                            </label>
+                            <input id="sw_otros_txt" type="text" placeholder="Especifique software..." class="text-[11px] border-b border-slate-300 outline-none bg-transparent">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Navegador -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl bg-blue-50/20">
+                    <h2 class="text-sm font-bold mb-4 text-blue-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">4</span>
+                        Uso de Navegador Web (Páginas e IPs)
+                    </h2>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-widest">A. Páginas Internas (5 Campos)</h3>
+                        <table class="w-full text-sm border-separate border-spacing-0 border border-slate-200 rounded-lg bg-white overflow-hidden">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="p-2 text-left w-2/3 uppercase text-[9px] font-bold border-b border-slate-200">URL / Dirección IP</th>
+                                    <th class="p-2 text-left uppercase text-[9px] font-bold border-b border-slate-200">Propósito</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-internas">
+                                <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td></tr>
+                                <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td></tr>
+                                <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td></tr>
+                                <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td></tr>
+                                <tr><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-widest">B. Portales Externos (10 Campos)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="grid-externas">
+                        <input type="text" placeholder="01" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="02" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="03" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="04" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="05" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="06" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="07" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="08" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="09" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                        <input type="text" placeholder="10" class="text-xs border p-2 rounded-lg bg-white outline-none focus:border-blue-600">
+                    </div>
+                </div>
+
+                <!-- 5. Archivos -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl">
+                    <h2 class="text-sm font-bold mb-4 text-blue-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-blue-800 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">5</span>
+                        Archivos y Unidades de Red
+                    </h2>
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">A. Unidades Mapeadas (Letras Ej: Z, F):</label>
+                        <input id="userUnidades" type="text" class="w-full border-b border-slate-200 bg-transparent outline-none p-1 text-sm focus:border-blue-600">
+                    </div>
+                    <table class="w-full text-sm border-separate border-spacing-0 border border-slate-200 rounded-lg bg-white">
+                        <thead class="bg-slate-50 text-[9px] font-bold">
+                            <tr><th class="p-2 text-left w-1/3 border-b">RUTA / CARPETA</th><th class="p-2 text-left w-1/3 border-b">USO</th><th class="p-2 text-center border-b">IMPORTANCIA</th></tr>
+                        </thead>
+                        <tbody id="table-carpetas">
+                            <tr><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b text-center"><input type="text" class="w-full outline-none text-center text-xs" placeholder="B/M/A"></td></tr>
+                            <tr><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b text-center"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                            <tr><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b text-center"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                            <tr><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b text-center"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                            <tr><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 text-center"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 6. Criticidad -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl bg-red-50/10">
+                    <h2 class="text-sm font-bold mb-4 text-red-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-red-700 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">6</span>
+                        Criticidad Operativa
+                    </h2>
+                    <div class="space-y-4">
+                        <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">¿Qué procesos críticos se detienen si falla el servidor?</label>
+                        <textarea id="userCriticidad" class="w-full border border-slate-200 rounded-lg p-3 text-sm h-16 bg-white focus:border-red-600 outline-none"></textarea>
+                        <div class="flex flex-wrap justify-between gap-2 text-[10px] font-bold uppercase text-slate-400 bg-white p-2 rounded shadow-sm border border-slate-100">
+                            <label class="flex items-center space-x-2"><input type="radio" name="time" value="Critico"> <span>Inmediato</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="time" value="2-4h"> <span>2-4 horas</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="time" value="FullDay"> <span>Día completo</span></label>
+                            <label class="flex items-center space-x-2"><input type="radio" name="time" value="Manual"> <span>Manual</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Fallas -->
+                <div class="section-card p-6 mb-8 border border-slate-200 rounded-xl bg-orange-50/10">
+                    <h2 class="text-sm font-bold mb-4 text-orange-800 flex items-center uppercase tracking-widest">
+                        <span class="bg-orange-700 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">7</span>
+                        Reporte de Fallas y Errores
+                    </h2>
+                    <table class="w-full text-sm border-separate border-spacing-0 border border-slate-200 rounded-lg bg-white overflow-hidden">
+                        <thead class="bg-slate-50 text-[9px] font-bold text-slate-500 uppercase">
+                            <tr><th class="p-2 text-left w-1/4 border-b">Programa / Web</th><th class="p-2 text-left border-b">Falla Detectada</th><th class="p-2 text-center border-b w-1/4">Frecuencia</th></tr>
+                        </thead>
+                        <tbody id="table-fallas">
+                            <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                            <tr><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 border-b border-slate-100"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                            <tr><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1"><input type="text" class="w-full outline-none px-2 py-1 text-xs"></td><td class="p-1 text-center"><input type="text" class="w-full outline-none text-center text-xs"></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </form>
+
+            <!-- Botones de Acción (Se ocultan en PDF) -->
+            <div class="no-print mt-12 flex flex-col items-center space-y-6 pb-16">
+                <button id="btn-envio" onclick="enviarPDF()" class="bg-green-600 hover:bg-green-700 text-white font-black py-4 px-12 rounded-full transition-all shadow-xl flex items-center transform hover:scale-105 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    GENERAR PDF Y ENVIAR POR CORREO
+                </button>
+                
+                <div class="flex space-x-6">
+                    <button onclick="confirm('¿Limpiar todo el formulario?') && window.location.reload()" class="text-slate-400 text-[10px] font-black hover:text-red-600 transition-all uppercase tracking-widest border-b border-transparent hover:border-red-600">
+                        Borrar Datos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SEGURIDAD
+        const SECRET_PASS = "BERY2026"; 
+
+        function checkAccess() {
+            const input = document.getElementById('access-code').value;
+            const error = document.getElementById('error-msg');
+            
+            if(input === SECRET_PASS) {
+                document.getElementById('security-overlay').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('blur-content');
+                document.getElementById('main-content').classList.add('transition-none');
+            } else {
+                error.classList.remove('hidden');
+                document.getElementById('access-code').value = "";
+            }
+        }
+
+        document.getElementById('access-code').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') checkAccess();
+        });
+
+        function showAlert(msg, isSuccess = false) {
+            const box = document.getElementById('alert-box');
+            document.getElementById('alert-msg').innerText = msg;
+            box.classList.remove('hidden');
+            if(isSuccess) {
+                setTimeout(() => box.classList.add('hidden'), 8000);
+            }
+        }
+
+        async function enviarPDF() {
+            const userName = document.getElementById('userName').value || "Sin_Nombre";
+            const userArea = document.getElementById('userArea').value || "Sin_Area";
+            const fileName = `Relevamiento_${userName.replace(/\s+/g, '_')}_${userArea.replace(/\s+/g, '_')}.pdf`;
+
+            showAlert("Generando archivo PDF profesional...");
+
+            const element = document.getElementById('capture-area');
+            
+            // Opciones de html2pdf
+            const opt = {
+                margin:       10,
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                // Generar y descargar el PDF
+                await html2pdf().set(opt).from(element).save();
+
+                showAlert("PDF DESCARGADO. Abriendo correo para adjuntar...", true);
+
+                const subject = encodeURIComponent(`REPORTE RELEVAMIENTO IT: ${userName} (${userArea})`);
+                const body = encodeURIComponent(`Hola Sistemas,\n\nAdjunto envío mi reporte de relevamiento de procesos en formato PDF (ver archivo descargado en mi equipo).\n\nAtentamente,\n${userName}`);
+                
+                // Abrir mailto después de un breve delay para permitir la descarga
+                setTimeout(() => {
+                    window.location.href = `mailto:sistemas@beryhuert.com.mx,ksalazar@beryhuert.com.mx?subject=${subject}&body=${body}`;
+                }, 2000);
+
+            } catch (err) {
+                console.error(err);
+                showAlert("Error al generar el PDF. Intente de nuevo.");
+            }
+        }
+    </script>
+</body>
+</html>
