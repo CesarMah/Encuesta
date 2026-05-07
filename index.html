@@ -12,42 +12,35 @@
         @media print {
             .no-print { display: none !important; }
             body { background-color: white !important; }
-            .container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; box-shadow: none !important; }
         }
 
-        /* Control estricto de saltos de página */
+        /* Clase para ocultar elementos en el PDF */
+        .pdf-render .no-print {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+
+        /* Control de saltos de página para secciones y tablas */
         .section-card {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            margin-bottom: 2rem;
-            display: block;
+            margin-bottom: 1.5rem;
         }
 
-        /* Asegurar que el botón no aparezca en el PDF */
-        .pdf-render .no-print {
-            display: none !important;
-            visibility: hidden !important;
-            height: 0 !important;
-            overflow: hidden !important;
+        table {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
 
         .blur-content { filter: blur(15px); pointer-events: none; user-select: none; }
         
-        /* Ajustes de visualización para el PDF */
+        /* Estilos estéticos para el PDF */
         .pdf-render input, .pdf-render textarea {
             border: none !important;
             background-color: transparent !important;
             font-size: 11px !important;
             color: #1e293b !important;
-        }
-        
-        .pdf-render .section-card {
-            border: 1px solid #e2e8f0 !important;
-            background-color: #fcfdfe !important;
-        }
-
-        table {
-            page-break-inside: avoid !important;
         }
     </style>
 </head>
@@ -62,7 +55,7 @@
                 </svg>
             </div>
             <h2 class="text-xl font-bold text-slate-800 mb-2 uppercase tracking-tight">Acceso Restringido</h2>
-            <p class="text-sm text-slate-500 mb-6">Ingrese el código de acceso proporcionado por Sistemas para habilitar el formulario.</p>
+            <p class="text-sm text-slate-500 mb-6 text-balance">Ingrese el código proporcionado por Sistemas para habilitar el formulario.</p>
             <input type="password" id="access-code" class="w-full border-2 border-slate-200 rounded-lg p-3 text-center text-lg tracking-widest focus:border-blue-600 outline-none mb-4" placeholder="••••">
             <button onclick="checkAccess()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg active:scale-95">
                 Verificar Acceso
@@ -71,30 +64,32 @@
         </div>
     </div>
 
+    <!-- Notificación (FUERA DEL AREA DE CAPTURA) -->
+    <div id="alert-box" class="no-print hidden fixed top-5 left-1/2 transform -translate-x-1/2 z-[110] bg-blue-800 text-white px-8 py-4 rounded-xl shadow-2xl flex flex-col items-center space-y-2 border border-blue-400">
+        <div class="flex items-center space-x-3">
+            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="alert-msg" class="font-bold">Generando reporte PDF...</span>
+        </div>
+    </div>
+
     <!-- Contenido Principal -->
     <div id="main-content" class="blur-content transition-all duration-700">
+        
+        <!-- AREA DE CAPTURA PDF -->
         <div id="capture-area" class="container mx-auto max-w-4xl p-10 bg-white shadow-xl mt-8 rounded-2xl border border-slate-200 relative">
             
-            <!-- Notificación -->
-            <div id="alert-box" class="hidden fixed top-5 left-1/2 transform -translate-x-1/2 z-[110] bg-blue-800 text-white px-8 py-4 rounded-xl shadow-2xl flex flex-col items-center space-y-2 border border-blue-400">
-                <div class="flex items-center space-x-3">
-                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span id="alert-msg" class="font-bold">Generando PDF de alta calidad...</span>
-                </div>
-            </div>
-
             <!-- Header -->
             <div class="flex justify-between items-start border-b-4 border-blue-600 pb-6 mb-8">
                 <div>
                     <h1 class="text-3xl font-extrabold text-blue-900 uppercase tracking-tight">Relevamiento de Procesos</h1>
-                    <p class="text-lg text-slate-500 font-semibold mt-1 italic tracking-wide text-blue-800/60">Grupo Beryhuert / Cadebry</p>
+                    <p class="text-lg text-slate-500 font-semibold mt-1 italic tracking-wide text-blue-800/60 font-serif tracking-tighter">Grupo Beryhuert / Cadebry</p>
                 </div>
                 <div class="text-right">
                     <div class="bg-blue-100 text-blue-800 text-[10px] font-black px-4 py-1.5 rounded-full border border-blue-200 uppercase tracking-widest">Confidencial - Uso Interno</div>
-                    <p class="text-[10px] text-slate-400 mt-2 font-mono uppercase tracking-tighter">ID: RELEV-2026-V10</p>
+                    <p class="text-[10px] text-slate-400 mt-2 font-mono uppercase tracking-tighter">ID: RELEV-2026-V11</p>
                 </div>
             </div>
 
@@ -107,16 +102,16 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 tracking-widest">Nombre Completo</label>
-                            <input id="userName" name="userName" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Nombre Completo</label>
+                            <input id="userName" name="userName" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 tracking-widest">Departamento / Área</label>
-                            <input id="userArea" name="userArea" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Departamento / Área</label>
+                            <input id="userArea" name="userArea" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
                         </div>
                         <div class="md:col-span-2">
-                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1 tracking-widest">Puesto Actual</label>
-                            <input id="userPuesto" name="userPuesto" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm transition-all">
+                            <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1">Puesto Actual</label>
+                            <input id="userPuesto" name="userPuesto" type="text" class="w-full border-b-2 border-slate-300 bg-transparent focus:border-blue-600 outline-none p-2 text-sm">
                         </div>
                     </div>
                 </div>
@@ -156,7 +151,7 @@
                         Navegación Web (Sistemas e IPs)
                     </h2>
                     <div class="mb-6">
-                        <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-tighter italic">A. Páginas Internas e IPs de Servidor</h3>
+                        <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase italic tracking-widest">A. Páginas Internas e IPs de Servidor</h3>
                         <table class="w-full text-sm border-separate border-spacing-0 border border-slate-300 rounded-lg bg-white overflow-hidden">
                             <thead class="bg-slate-100 font-bold">
                                 <tr><th class="p-2 text-left w-2/3 border-b border-slate-200 text-[9px] uppercase">URL / IP Interna</th><th class="p-2 text-left border-b border-slate-200 text-[9px] uppercase">Uso</th></tr>
@@ -170,18 +165,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase tracking-tighter italic">B. Portales Externos Esenciales</h3>
+                    <h3 class="text-[9px] font-black text-slate-500 mb-2 uppercase italic tracking-widest">B. Portales Externos Esenciales</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="externas-container">
-                        <input type="text" placeholder="01" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="02" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="03" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="04" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="05" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="06" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="07" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="08" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="09" class="text-xs border border-slate-300 p-2 rounded bg-white">
-                        <input type="text" placeholder="10" class="text-xs border border-slate-300 p-2 rounded bg-white">
+                        <input type="text" placeholder="01" class="text-xs border border-slate-300 p-2 rounded bg-white"><input type="text" placeholder="02" class="text-xs border border-slate-300 p-2 rounded bg-white">
+                        <input type="text" placeholder="03" class="text-xs border border-slate-300 p-2 rounded bg-white"><input type="text" placeholder="04" class="text-xs border border-slate-300 p-2 rounded bg-white">
+                        <input type="text" placeholder="05" class="text-xs border border-slate-300 p-2 rounded bg-white"><input type="text" placeholder="06" class="text-xs border border-slate-300 p-2 rounded bg-white">
+                        <input type="text" placeholder="07" class="text-xs border border-slate-300 p-2 rounded bg-white"><input type="text" placeholder="08" class="text-xs border border-slate-300 p-2 rounded bg-white">
+                        <input type="text" placeholder="09" class="text-xs border border-slate-300 p-2 rounded bg-white"><input type="text" placeholder="10" class="text-xs border border-slate-300 p-2 rounded bg-white">
                     </div>
                 </div>
 
@@ -223,8 +213,8 @@
                     </div>
                 </div>
 
-                <!-- 7. Fallas -->
-                <div class="section-card p-6 border border-slate-200 rounded-xl bg-orange-50/20 shadow-sm">
+                <!-- 7. Fallas (Control de Salto de Página) -->
+                <div class="section-card p-6 border border-slate-200 rounded-xl bg-orange-50/20 shadow-sm" style="page-break-before: always;">
                     <h2 class="text-sm font-bold mb-4 text-orange-800 flex items-center uppercase tracking-widest border-b border-orange-200 pb-2">
                         <span class="bg-orange-700 text-white w-6 h-6 rounded-full flex items-center justify-center mr-3 text-[10px]">7</span>
                         Reporte de Fallas Detectadas
@@ -241,15 +231,15 @@
                     </table>
                 </div>
             </form>
+        </div>
 
-            <!-- Botones de Acción (Fuera del capture-area si prefieres, pero aquí los ocultaremos) -->
-            <div class="no-print mt-12 flex flex-col items-center space-y-6 pb-20">
-                <button id="btn-envio" onclick="enviarPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-20 rounded-full transition-all shadow-xl flex items-center transform hover:scale-105 active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                    GENERAR PDF Y ENVIAR REPORTE
-                </button>
-                <button onclick="confirm('¿Desea borrar los datos?') && window.location.reload()" class="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-red-500">Limpiar Formulario</button>
-            </div>
+        <!-- BOTONES FUERA DEL AREA DE CAPTURA PDF -->
+        <div class="no-print mt-12 flex flex-col items-center space-y-6 pb-24">
+            <button id="btn-envio" onclick="enviarPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-black py-5 px-16 rounded-full transition-all shadow-xl flex items-center transform hover:scale-105 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                GENERAR PDF Y ENVIAR REPORTE
+            </button>
+            <button onclick="confirm('¿Desea borrar los datos?') && window.location.reload()" class="text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:text-red-500">Limpiar Formulario</button>
         </div>
     </div>
 
@@ -281,24 +271,18 @@
             const userArea = document.getElementById('userArea').value || "Sin_Area";
             const fileName = `Relevamiento_${userName.replace(/\s+/g, '_')}.pdf`;
 
-            showAlert("Preparando reporte...");
+            showAlert("Generando PDF de alta calidad...");
 
-            // Sincronizar valores antes del render
+            // Sincronizar valores para html2pdf antes de la captura
             const inputs = document.querySelectorAll('input[type="text"], textarea');
             inputs.forEach(input => {
                 input.setAttribute('value', input.value);
                 if(input.tagName === 'TEXTAREA') input.innerHTML = input.value;
             });
 
-            // Sincronizar Radios
-            const radios = document.querySelectorAll('input[type="radio"]');
-            radios.forEach(radio => {
-                if(radio.checked) radio.setAttribute('checked', 'checked');
-            });
-
             const element = document.getElementById('capture-area');
             
-            // Forzar ocultamiento del botón agregando clase al body
+            // Forzar modo PDF en el body para aplicar estilos especiales
             document.body.classList.add('pdf-render');
 
             const opt = {
@@ -317,18 +301,18 @@
             };
 
             try {
-                // Generar PDF
+                // Generar y descargar el PDF
                 await html2pdf().set(opt).from(element).save();
                 
-                showAlert("PDF generado correctamente. Abriendo correo...", true);
+                showAlert("PDF generado. Abriendo correo...", true);
                 
                 const subject = encodeURIComponent(`REPORTE RELEVAMIENTO IT: ${userName} (${userArea})`);
-                const body = encodeURIComponent(`Hola Sistemas,\n\nAdjunto envío mi reporte de relevamiento de procesos en PDF.\n\nAtentamente,\n${userName}`);
+                const body = encodeURIComponent(`Hola Sistemas,\n\nAdjunto envío mi reporte de relevamiento de procesos en formato PDF.\n\nAtentamente,\n${userName}`);
                 
                 setTimeout(() => {
                     window.location.href = `mailto:sistemas@beryhuert.com.mx,ksalazar@beryhuert.com.mx?subject=${subject}&body=${body}`;
                     document.body.classList.remove('pdf-render');
-                }, 2000);
+                }, 1500);
 
             } catch (err) {
                 console.error(err);
